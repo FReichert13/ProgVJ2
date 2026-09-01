@@ -1,0 +1,11 @@
+#builds/exportaciones
+/build/
+*.love
+*.zip
+*.exe
+#sistema operativo
+.DS_Store
+Thumbs.db
+#editores
+.vscode/
+.idea/

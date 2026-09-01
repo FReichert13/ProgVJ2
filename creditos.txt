@@ -1,0 +1,22 @@
+CRRDITOS DE ASSETS
+Graficos y sonidos: "Space Shooter Redux" y packs de espacio — Kenney (www.kenney.nl)
+Licencia: CC0 1.0 Universal
+
+Naves y disparos:
+- img/playerShip3_green.png, img/enemyRed3.png, img/laserGreen11.png, img/fire13.png
+
+Obstaculos:
+- img/meteorGrey_big2.png, img/meteorBrown_big1.png
+- img/meteorGrey_small1.png, img/meteorGrey_small2.png, img/meteorBrown_small2.png
+- img/planet03.png, img/planet05.png, img/planet08.png
+
+Efectos:
+- img/explosion05.png, img/blackSmoke07.png
+
+Fondo:
+- img/black.png
+
+Sonidos:
+- sonidos/sfx_laser1.ogg, sonidos/sfx_lose.ogg
+
+Codigo: desarrollo propio.
