@@ -2,6 +2,10 @@
 ANCHO = 1280
 ALTO  = 720
 --modulos
+Class = require('lib.class')
+require('estado')
+require('maquinaEstado')
+require('estadosEnemigo')
 require('utiles')
 require('sonido')
 require('fondo')

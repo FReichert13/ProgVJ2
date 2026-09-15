@@ -1,54 +1,47 @@
 --clase enemigo
-Enemigo = {}
-Enemigo.__index = Enemigo
+Enemigo = Class{}
 Enemigos = {}
 SpriteEnemigo = nil
 --inicializacion
-function Enemigo:Nuevo(x, y, v)
-    local o = setmetatable({}, Enemigo)
-    o.x = x
-    o.y = y
-    o.sprite = SpriteEnemigo
-    o.ancho = o.sprite:getWidth()
-    o.alto  = o.sprite:getHeight()
-    o.origen_x = o.ancho / 2
-    o.origen_y = o.alto / 2
-    o.velocidad = v
-    o.angulo = 0
-    o.entrando = true
-    o.relojDisparo = math.random(20, 40) / 10
-    return o
+function Enemigo:init(x, y, v)
+    self.x = x
+    self.y = y
+    self.sprite = SpriteEnemigo
+    self.ancho = self.sprite:getWidth()
+    self.alto  = self.sprite:getHeight()
+    self.origen_x = self.ancho / 2
+    self.origen_y = self.alto / 2
+    self.velocidad = v
+    self.angulo = 0
+    self.relojDisparo = math.random(20, 40) / 10
+    self.maquina = MaquinaEstado{
+        entrando     = function() return EstadoEntrando(self) end,
+        persiguiendo = function() return EstadoPersiguiendo(self) end,
+        disparando   = function() return EstadoDisparando(self) end
+    }
+    self.maquina:cambiar("entrando")
 end
---actualiacion
-function Enemigo:Actualizar(dt, jx, jy)
-    --persigue al jugador
-    local dx = jx - self.x
-    local dy = jy - self.y
+--persigue al jugador
+function Enemigo:MoverHaciaJugador(dt)
+    local dx = Jugador.x - self.x
+    local dy = Jugador.y - self.y
     local dist = math.sqrt(dx * dx + dy * dy)
     if dist > 1 then
         self.x = self.x + (dx / dist) * self.velocidad * dt
         self.y = self.y + (dy / dist) * self.velocidad * dt
         self.angulo = math.atan2(dy, dx)
     end
-    if self.entrando then
-        if self.x >= self.origen_x and self.x <= ANCHO - self.origen_x and
-           self.y >= self.origen_y and self.y <= ALTO - self.origen_y then
-            self.entrando = false
-        end
-    else
-        if self.x < self.origen_x         then self.x = self.origen_x end
-        if self.x > ANCHO - self.origen_x then self.x = ANCHO - self.origen_x end
-        if self.y < self.origen_y         then self.y = self.origen_y end
-        if self.y > ALTO - self.origen_y  then self.y = ALTO - self.origen_y end
-    end
 end
-function Enemigo:TocaDisparar(dt)
-    self.relojDisparo = self.relojDisparo - dt
-    if self.relojDisparo <= 0 then
-        self.relojDisparo = math.random(25, 45) / 10
-        return true
-    end
-    return false
+--no deja salir de la pantalla
+function Enemigo:Limitar()
+    if self.x < self.origen_x         then self.x = self.origen_x end
+    if self.x > ANCHO - self.origen_x then self.x = ANCHO - self.origen_x end
+    if self.y < self.origen_y         then self.y = self.origen_y end
+    if self.y > ALTO - self.origen_y  then self.y = ALTO - self.origen_y end
+end
+--actualiacion
+function Enemigo:Actualizar(dt)
+    self.maquina:actualizar(dt)
 end
 --renderizado
 function Enemigo:Dibujar()
@@ -76,7 +69,7 @@ function GenerarOleada(cantidad, velocidad)
             x = ANCHO + math.random(40, 200)
             y = math.random(40, ALTO - 40)
         end
-        table.insert(Enemigos, Enemigo:Nuevo(x, y, velocidad))
+        table.insert(Enemigos, Enemigo(x, y, velocidad))
     end
 end
 function SepararEnemigos()
@@ -103,11 +96,7 @@ end
 function ActualizarEnemigos(dt)
     for i = #Enemigos, 1, -1 do
         local e = Enemigos[i]
-        e:Actualizar(dt, Jugador.x, Jugador.y)
-        if e:TocaDisparar(dt) then
-            local ang = math.atan2(Jugador.y - e.y, Jugador.x - e.x)
-            LanzarBalaEnemiga(e.x, e.y, ang)
-        end
+        e:Actualizar(dt)
     end
     SepararEnemigos()
 end

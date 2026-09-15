@@ -221,7 +221,7 @@ function DibujarFinDeJuego()
     if Juego.estado == "victoria" then
         love.graphics.printf("¡VICTORIA!", 0, ALTO / 2 - 80, ANCHO, "center")
     else
-        love.graphics.printf("AVIÓN DERRIBADO", 0, ALTO / 2 - 80, ANCHO, "center")
+        love.graphics.printf("NAVE DESTRUIDA", 0, ALTO / 2 - 80, ANCHO, "center")
     end
     love.graphics.setFont(Juego.fuenteHUD)
     love.graphics.printf("Puntaje final: " .. Juego.puntaje, 0, ALTO / 2, ANCHO, "center")
