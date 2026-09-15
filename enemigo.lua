@@ -13,7 +13,10 @@ function Enemigo:init(x, y, v)
     self.origen_y = self.alto / 2
     self.velocidad = v
     self.angulo = 0
-    self.relojDisparo = math.random(20, 40) / 10
+    self.color = {1, 1, 1}
+    self.relojMin = 25
+    self.relojMax = 45
+    self.relojDisparo = math.random(self.relojMin, self.relojMax) / 10
     self.maquina = MaquinaEstado{
         entrando     = function() return EstadoEntrando(self) end,
         persiguiendo = function() return EstadoPersiguiendo(self) end,
@@ -45,8 +48,10 @@ function Enemigo:Actualizar(dt)
 end
 --renderizado
 function Enemigo:Dibujar()
+    love.graphics.setColor(self.color)
     love.graphics.draw(self.sprite, redondear(self.x), redondear(self.y),
                        self.angulo + math.pi / 2, 1, 1, self.origen_x, self.origen_y)
+    love.graphics.setColor(1, 1, 1, 1)
 end
 function Enemigo:CajaX() return self.x - self.origen_x end
 function Enemigo:CajaY() return self.y - self.origen_y end
@@ -55,21 +60,40 @@ function InicializarEnemigos()
     Enemigos = {}
     SpriteEnemigo = love.graphics.newImage("img/enemyRed3.png")
 end
-function GenerarOleada(cantidad, velocidad)
+--elige el tipo segun el nivel (mas nivel, mas variedad)
+function ElegirTipo(nivel)
+    local r = math.random()
+    if nivel >= 3 and r < 0.25 then
+        return EnemigoArtillero
+    elseif nivel >= 2 and r < 0.5 then
+        return EnemigoRapido
+    else
+        return Enemigo
+    end
+end
+--genera la oleada con un patron distinto segun el nivel
+function GenerarOleada(nivel)
+    local cantidad  = 3 + nivel
+    local velocidad = 80 + nivel * 15
+    local patron = nivel % 3
     for i = 1, cantidad do
         local x, y
-        local lado = math.random(3)   --1 arriba, 2 izquierda, 3 derecha
-        if lado == 1 then
-            x = math.random(40, ANCHO - 40)
+        if patron == 1 then
+            --desde arriba, repartidos a lo ancho
+            x = (i / (cantidad + 1)) * ANCHO
             y = -math.random(40, 200)
-        elseif lado == 2 then
-            x = -math.random(40, 200)
+        elseif patron == 2 then
+            --alternando por los costados
+            if i % 2 == 0 then x = -math.random(40, 200) else x = ANCHO + math.random(40, 200) end
             y = math.random(40, ALTO - 40)
         else
-            x = ANCHO + math.random(40, 200)
-            y = math.random(40, ALTO - 40)
+            --en circulo por fuera de la pantalla
+            local ang = (i / cantidad) * math.pi * 2
+            x = ANCHO / 2 + math.cos(ang) * (ANCHO * 0.7)
+            y = ALTO / 2 + math.sin(ang) * (ALTO * 0.7)
         end
-        table.insert(Enemigos, Enemigo(x, y, velocidad))
+        local Tipo = ElegirTipo(nivel)
+        table.insert(Enemigos, Tipo(x, y, velocidad))
     end
 end
 function SepararEnemigos()

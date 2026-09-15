@@ -35,7 +35,7 @@ function EstadoDisparando:ingresar()
     local e = self.enemigo
     local ang = math.atan2(Jugador.y - e.y, Jugador.x - e.x)
     LanzarBalaEnemiga(e.x, e.y, ang)
-    e.relojDisparo = math.random(25, 45) / 10
+    e.relojDisparo = math.random(e.relojMin, e.relojMax) / 10
     self.tiempo = 0.2
 end
 function EstadoDisparando:actualizar(dt)
