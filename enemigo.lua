@@ -2,6 +2,8 @@
 Enemigo = Class{}
 Enemigos = {}
 SpriteEnemigo = nil
+SpriteEnemigoRapido = nil
+SpriteEnemigoNegro = nil
 --inicializacion
 function Enemigo:init(x, y, v)
     self.x = x
@@ -13,7 +15,6 @@ function Enemigo:init(x, y, v)
     self.origen_y = self.alto / 2
     self.velocidad = v
     self.angulo = 0
-    self.color = {1, 1, 1}
     self.relojMin = 25
     self.relojMax = 45
     self.relojDisparo = math.random(self.relojMin, self.relojMax) / 10
@@ -48,17 +49,17 @@ function Enemigo:Actualizar(dt)
 end
 --renderizado
 function Enemigo:Dibujar()
-    love.graphics.setColor(self.color)
     love.graphics.draw(self.sprite, redondear(self.x), redondear(self.y),
                        self.angulo + math.pi / 2, 1, 1, self.origen_x, self.origen_y)
-    love.graphics.setColor(1, 1, 1, 1)
 end
 function Enemigo:CajaX() return self.x - self.origen_x end
 function Enemigo:CajaY() return self.y - self.origen_y end
 --gestor
 function InicializarEnemigos()
     Enemigos = {}
-    SpriteEnemigo = love.graphics.newImage("img/enemyRed3.png")
+    SpriteEnemigo       = love.graphics.newImage("img/enemyRed3.png")
+    SpriteEnemigoRapido = love.graphics.newImage("img/enemyBlue5.png")
+    SpriteEnemigoNegro  = love.graphics.newImage("img/enemyBlack2.png")
 end
 --elige el tipo segun el nivel (mas nivel, mas variedad)
 function ElegirTipo(nivel)

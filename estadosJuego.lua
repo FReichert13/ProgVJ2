@@ -17,6 +17,7 @@ end
 function EstadoJugando:actualizar(dt)
     ActualizarJugador(dt)
     ActualizarDisparos(dt)
+    ActualizarMisiles(dt)
     ActualizarBalasEnemigas(dt)
     ActualizarEnemigos(dt)
     ActualizarObstaculos(dt)

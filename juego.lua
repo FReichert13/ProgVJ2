@@ -36,6 +36,7 @@ function ReiniciarJuego()
     Enemigos = {}
     Obstaculos = {}
     Efectos = {}
+    Misiles = {}
     TiempoMeteoro = 0
     TiempoPlaneta = 0
     InicializarJuego()
@@ -71,20 +72,20 @@ function DestruirJugador()
     CrearExplosion(Jugador.x, Jugador.y, 0.9)
     ReproducirDerrota()
 end
---bengala (explocion en area que destruye a los enemigos cercanos)
+--bengala (lanza 6 misiles en abanico, 3 de cada lado)
 function LanzarBengala()
-    local lado = 380
-    local bx = Jugador.x - lado / 2
-    local by = Jugador.y - lado / 2
-    for j = #Enemigos, 1, -1 do
-        local e = Enemigos[j]
-        if hayColision(bx, by, lado, lado, e:CajaX(), e:CajaY(), e.ancho, e.alto) then
-            CrearExplosion(e.x, e.y)
-            table.remove(Enemigos, j)
-            Juego.puntaje = Juego.puntaje + 15
-        end
+    local a = Jugador.angulo
+    local lateral = Jugador.alto / 2
+    local izqX = Jugador.x + math.cos(a - math.pi / 2) * lateral
+    local izqY = Jugador.y + math.sin(a - math.pi / 2) * lateral
+    local derX = Jugador.x + math.cos(a + math.pi / 2) * lateral
+    local derY = Jugador.y + math.sin(a + math.pi / 2) * lateral
+    local aberturas = {math.rad(20), math.rad(45), math.rad(70)}
+    for _, off in ipairs(aberturas) do
+        LanzarMisil(izqX, izqY, a - off)
+        LanzarMisil(derX, derY, a + off)
     end
-    CrearExplosion(Jugador.x, Jugador.y)
+    ReproducirLaser()
 end
 --colisiones
 function ResolverColisiones()
@@ -119,6 +120,39 @@ function ResolverColisiones()
                 Juego.puntaje = Juego.puntaje + 5
                 break
             end
+        end
+    end
+    --misiles de la bengala (destruyen nave o meteoro de un golpe, menos planetas)
+    for i = #Misiles, 1, -1 do
+        local m = Misiles[i]
+        local mx = m.x - m.ancho / 2
+        local my = m.y - m.alto / 2
+        local impacto = false
+        for j = #Enemigos, 1, -1 do
+            local e = Enemigos[j]
+            if hayColision(mx, my, m.ancho, m.alto, e:CajaX(), e:CajaY(), e.ancho, e.alto) then
+                CrearExplosion(e.x, e.y)
+                table.remove(Enemigos, j)
+                Juego.puntaje = Juego.puntaje + 10
+                impacto = true
+                break
+            end
+        end
+        if not impacto then
+            for j = #Obstaculos, 1, -1 do
+                local o = Obstaculos[j]
+                if o.tipo ~= "planeta" and hayColision(mx, my, m.ancho, m.alto,
+                               o:CajaX(), o:CajaY(), o:CajaAncho(), o:CajaAlto()) then
+                    CrearExplosion(o.x, o.y)
+                    table.remove(Obstaculos, j)
+                    Juego.puntaje = Juego.puntaje + 5
+                    impacto = true
+                    break
+                end
+            end
+        end
+        if impacto then
+            table.remove(Misiles, i)
         end
     end
     --balas enemigas contra el jugador
@@ -184,6 +218,7 @@ function DibujarJuego()
     DibujarEnemigos()
     DibujarBalasEnemigas()
     DibujarDisparos()
+    DibujarMisiles()
     DibujarJugador()
     DibujarEfectos()
     DibujarDestello()
