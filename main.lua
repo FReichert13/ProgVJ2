@@ -17,6 +17,7 @@ require('tiposEnemigo')
 require('obstaculo')
 require('efectos')
 require('juego')
+require('estadosJuego')
 --inicializacion
 function love.load()
     math.randomseed(os.time())
@@ -28,45 +29,32 @@ function love.load()
     InicializarEnemigos()
     InicializarObstaculos()
     InicializarEfectos()
-    InicializarJuego()
+    InicializarFuentes()
+    MaquinaJuego = MaquinaEstado{
+        menu     = function() return EstadoMenu() end,
+        jugando  = function() return EstadoJugando() end,
+        victoria = function() return EstadoVictoria() end,
+        derrota  = function() return EstadoDerrota() end
+    }
+    MaquinaJuego:cambiar("menu")
 end
 --interaccion
 function love.keypressed(key)
     if key == "escape" then
         love.event.quit()
     end
-
-    if Juego.estado == "jugando" then
-        InteraccionJugador(key)
-    elseif key == "r" then
-        ReiniciarJuego()
+    if MaquinaJuego.actual.teclado then
+        MaquinaJuego.actual:teclado(key)
     end
 end
 --actualizacion
 function love.update(dt)
     ActualizarFondo(dt)
     ActualizarEfectos(dt)
-    ActualizarJuego(dt)  
-    if Juego.estado == "jugando" then
-        ActualizarJugador(dt)
-        ActualizarDisparos(dt)
-        ActualizarBalasEnemigas(dt)
-        ActualizarEnemigos(dt)
-        ActualizarObstaculos(dt)
-    end
+    MaquinaJuego:actualizar(dt)
 end
 --renderizado
 function love.draw()
     DibujarFondo()
-    DibujarObstaculos()      --meteoros y planetas
-    DibujarEnemigos()
-    DibujarBalasEnemigas()
-    DibujarDisparos()
-    DibujarJugador()
-    DibujarEfectos()
-    DibujarDestello()
-    DibujarHUD()
-    if Juego.estado ~= "jugando" then
-        DibujarFinDeJuego()
-    end
+    MaquinaJuego:dibujar()
 end

@@ -1,24 +1,25 @@
 --estado
 Juego = {
-    estado = "jugando",
     puntaje = 0,
     oleada = 0,
     oleadasTotales = 3,
+    gano = false,
     destelloDanio = 0,
     fuenteHUD = nil,
     fuenteGrande = nil
 }
+--fuentes (se crean una sola vez)
+function InicializarFuentes()
+    Juego.fuenteHUD    = love.graphics.newFont(16)
+    Juego.fuenteGrande = love.graphics.newFont(52)
+    love.graphics.setFont(Juego.fuenteHUD)
+end
 --inicializacion
 function InicializarJuego()
-    Juego.estado = "jugando"
     Juego.puntaje = 0
     Juego.oleada = 0
+    Juego.gano = false
     Juego.destelloDanio = 0
-    if not Juego.fuenteHUD then
-        Juego.fuenteHUD    = love.graphics.newFont(16)
-        Juego.fuenteGrande = love.graphics.newFont(52)
-    end
-    love.graphics.setFont(Juego.fuenteHUD)
     SiguienteOleada()
 end
 function ReiniciarJuego()
@@ -43,11 +44,9 @@ end
 function SiguienteOleada()
     Juego.oleada = Juego.oleada + 1
     if Juego.oleada > Juego.oleadasTotales then
-        Juego.estado = "victoria"
+        Juego.gano = true
     else
-        local cantidad  = 3 + Juego.oleada
-        local velocidad = 80 + Juego.oleada * 20
-        GenerarOleada(cantidad, velocidad)
+        GenerarOleada(Juego.oleada)
     end
 end
 --daño
@@ -61,7 +60,6 @@ function DanarJugador(danio)
         Jugador.vida = 0
         Jugador.vivo = false
         CrearExplosion(Jugador.x, Jugador.y, 0.9)
-        Juego.estado = "derrota"
         ReproducirDerrota()
     end
 end
@@ -71,7 +69,6 @@ function DestruirJugador()
     Jugador.vivo = false
     Juego.destelloDanio = 1
     CrearExplosion(Jugador.x, Jugador.y, 0.9)
-    Juego.estado = "derrota"
     ReproducirDerrota()
 end
 --bengala (explocion en area que destruye a los enemigos cercanos)
@@ -166,11 +163,31 @@ function ActualizarJuego(dt)
         Juego.destelloDanio = Juego.destelloDanio - dt * 1.6
         if Juego.destelloDanio < 0 then Juego.destelloDanio = 0 end
     end
-    if Juego.estado ~= "jugando" then return end
     ResolverColisiones()
-    if #Enemigos == 0 then
+    if #Enemigos == 0 and not Juego.gano then
         SiguienteOleada()
     end
+end
+--menu
+function DibujarMenu()
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setFont(Juego.fuenteGrande)
+    love.graphics.printf("GUARDIAN ESTELAR", 0, ALTO / 2 - 100, ANCHO, "center")
+    love.graphics.setFont(Juego.fuenteHUD)
+    love.graphics.printf("Enter para jugar", 0, ALTO / 2, ANCHO, "center")
+    love.graphics.printf("Flechas/AD: girar    W/Arriba: avanzar    Espacio: disparar    X: bengala",
+                        0, ALTO / 2 + 40, ANCHO, "center")
+end
+--escena de la partida
+function DibujarJuego()
+    DibujarObstaculos()
+    DibujarEnemigos()
+    DibujarBalasEnemigas()
+    DibujarDisparos()
+    DibujarJugador()
+    DibujarEfectos()
+    DibujarDestello()
+    DibujarHUD()
 end
 --hud
 function DibujarHUD()
@@ -213,12 +230,12 @@ function DibujarDestello()
     end
 end
 --pantalla final
-function DibujarFinDeJuego()
+function DibujarFin(gano)
     love.graphics.setColor(0, 0, 0, 0.55)
     love.graphics.rectangle("fill", 0, 0, ANCHO, ALTO)
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.setFont(Juego.fuenteGrande)
-    if Juego.estado == "victoria" then
+    if gano then
         love.graphics.printf("¡VICTORIA!", 0, ALTO / 2 - 80, ANCHO, "center")
     else
         love.graphics.printf("NAVE DESTRUIDA", 0, ALTO / 2 - 80, ANCHO, "center")
