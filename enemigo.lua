@@ -75,7 +75,7 @@ end
 --genera la oleada con un patron distinto segun el nivel
 function GenerarOleada(nivel)
     local cantidad  = 3 + nivel
-    local velocidad = 80 + nivel * 15
+    local velocidad = 95 + nivel * 17
     local patron = nivel % 3
     for i = 1, cantidad do
         local x, y

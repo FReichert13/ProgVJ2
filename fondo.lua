@@ -2,7 +2,7 @@
 Fondo = {
     imagen = nil,
     y = 0,
-    vel = 120
+    vel = 300
 }
 --inicializacion
 function InicializarFondo()
