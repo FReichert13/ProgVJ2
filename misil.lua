@@ -1,11 +1,11 @@
---misiles de la bengala
+--misiles de los misiles
 Misiles = {}
 SpriteMisil = nil
 function InicializarMisiles()
     Misiles = {}
     SpriteMisil = love.graphics.newImage("img/spaceMissiles_008.png")
 end
---crea un misil
+--crea un misil chico en (x, y) que viaja hacia "angulo"
 function LanzarMisil(x, y, angulo)
     local escala = 0.7
     table.insert(Misiles, {

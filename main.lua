@@ -1,6 +1,6 @@
 --configuracion global
-ANCHO = 1280
-ALTO  = 720
+ANCHO = 960
+ALTO  = 1280
 --modulos
 Class = require('lib.class')
 require('estado')
@@ -22,6 +22,7 @@ require('estadosJuego')
 --inicializacion
 function love.load()
     math.randomseed(os.time())
+    Lienzo = love.graphics.newCanvas(ANCHO, ALTO)
     CargarSonidos()
     InicializarFondo()
     InicializarJugador()
@@ -57,6 +58,16 @@ function love.update(dt)
 end
 --renderizado
 function love.draw()
-    DibujarFondo()
-    MaquinaJuego:dibujar()
+    --dibuja el juego en resolucion logica sobre el lienzo
+    love.graphics.setCanvas(Lienzo)
+    love.graphics.clear()
+        DibujarFondo()
+        MaquinaJuego:dibujar()
+    love.graphics.setCanvas()
+    --escala el lienzo para llenar la ventana manteniendo la proporcion
+    local vw, vh = love.graphics.getDimensions()
+    local escala = math.min(vw / ANCHO, vh / ALTO)
+    local ox = (vw - ANCHO * escala) / 2
+    local oy = (vh - ALTO * escala) / 2
+    love.graphics.draw(Lienzo, ox, oy, 0, escala, escala)
 end

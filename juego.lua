@@ -24,13 +24,13 @@ function InicializarJuego()
 end
 function ReiniciarJuego()
     Jugador.x = ANCHO / 2
-    Jugador.y = ALTO / 2
+    Jugador.y = ALTO * 0.75
     Jugador.angulo = -math.pi / 2
     Jugador.vida = 100
     Jugador.vivo = true
     Jugador.invulnerable = 0
-    Jugador.bengalaLista = true
-    Jugador.bengalaRecarga = 0
+    Jugador.misilesListos = true
+    Jugador.misilesRecarga = 0
     Disparos = {}
     BalasEnemigas = {}
     Enemigos = {}
@@ -72,8 +72,8 @@ function DestruirJugador()
     CrearExplosion(Jugador.x, Jugador.y, 0.9)
     ReproducirDerrota()
 end
---bengala (lanza 6 misiles en abanico, 3 de cada lado)
-function LanzarBengala()
+--misiles (lanza 6 misiles en abanico, 3 de cada lado)
+function LanzarMisiles()
     local a = Jugador.angulo
     local lateral = Jugador.alto / 2
     local izqX = Jugador.x + math.cos(a - math.pi / 2) * lateral
@@ -122,7 +122,7 @@ function ResolverColisiones()
             end
         end
     end
-    --misiles de la bengala (destruyen nave o meteoro de un golpe, menos planetas)
+    --misiles de los misiles (destruyen nave o meteoro de un golpe, menos planetas)
     for i = #Misiles, 1, -1 do
         local m = Misiles[i]
         local mx = m.x - m.ancho / 2
@@ -209,7 +209,7 @@ function DibujarMenu()
     love.graphics.printf("GUARDIAN ESTELAR", 0, ALTO / 2 - 100, ANCHO, "center")
     love.graphics.setFont(Juego.fuenteHUD)
     love.graphics.printf("Enter para jugar", 0, ALTO / 2, ANCHO, "center")
-    love.graphics.printf("Flechas/AD: girar    W/Arriba: avanzar    Espacio: disparar    X: bengala",
+    love.graphics.printf("Flechas/AD: girar    W/Arriba: avanzar    Espacio: disparar    X: misiles",
                         0, ALTO / 2 + 40, ANCHO, "center")
 end
 --escena de la partida
@@ -228,33 +228,35 @@ end
 function DibujarHUD()
     love.graphics.setFont(Juego.fuenteHUD)
     love.graphics.setColor(1, 1, 1, 1)
+    --fila 1: energia (izquierda) y misiles (derecha)
     love.graphics.print("Energía", 12, 10)
     love.graphics.setColor(1, 1, 1, 0.3)
-    love.graphics.rectangle("fill", 90, 12, 160, 16)
+    love.graphics.rectangle("fill", 80, 12, 140, 16)
     local r, g, b = 0.2, 0.9, 0.3
     if Jugador.vida <= 15 then r, g, b = 1, 0.2, 0.2
     elseif Jugador.vida <= 40 then r, g, b = 1, 0.6, 0.1 end
     love.graphics.setColor(r, g, b, 1)
-    love.graphics.rectangle("fill", 90, 12, 160 * (Jugador.vida / 100), 16)
+    love.graphics.rectangle("fill", 80, 12, 140 * (Jugador.vida / 100), 16)
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.print(math.floor(Jugador.vida), 258, 10)
-    love.graphics.print("Oleada " .. Juego.oleada .. "/" .. Juego.oleadasTotales, 320, 10)
-    love.graphics.print("Puntaje " .. Juego.puntaje, 470, 10)
-    love.graphics.print("Enemigos " .. #Enemigos, 620, 10)
-    love.graphics.print("Bengala [X]", ANCHO - 275, 10)
+    love.graphics.print(math.floor(Jugador.vida), 228, 10)
+    love.graphics.print("Misiles [X]", ANCHO - 210, 10)
     love.graphics.setColor(0.2, 0.2, 0.2, 1)
-    love.graphics.rectangle("fill", ANCHO - 150, 12, 140, 16)
-    if Jugador.bengalaLista then
+    love.graphics.rectangle("fill", ANCHO - 120, 12, 110, 16)
+    if Jugador.misilesListos then
         love.graphics.setColor(1, 0.8, 0.2, 1)
-        love.graphics.rectangle("fill", ANCHO - 150, 12, 140, 16)
+        love.graphics.rectangle("fill", ANCHO - 120, 12, 110, 16)
     else
-        local pr = 1 - (Jugador.bengalaRecarga / Jugador.bengalaRecargaMax)
+        local pr = 1 - (Jugador.misilesRecarga / Jugador.misilesRecargaMax)
         love.graphics.setColor(0.8, 0.6, 0.1, 1)
-        love.graphics.rectangle("fill", ANCHO - 150, 12, 140 * pr, 16)
+        love.graphics.rectangle("fill", ANCHO - 120, 12, 110 * pr, 16)
     end
     love.graphics.setColor(1, 1, 1, 1)
-
-    love.graphics.print("Flechas/AD: girar    W/Arriba: avanzar    Espacio: disparar    X: bengala",
+    --fila 2: oleada, puntaje y enemigos
+    love.graphics.print("Oleada " .. Juego.oleada .. "/" .. Juego.oleadasTotales, 12, 34)
+    love.graphics.print("Puntaje " .. Juego.puntaje, 280, 34)
+    love.graphics.print("Enemigos " .. #Enemigos, 520, 34)
+    --controles abajo
+    love.graphics.print("Flechas/AD: girar   W: avanzar   Espacio: disparar   X: misiles",
                         12, ALTO - 24)
 end
 function DibujarDestello()

@@ -5,15 +5,16 @@ Jugador = {
     angulo = -math.pi / 2,
     ancho = 98,
     alto = 75,
-    vel = 420,
-    velGiro = 4.6,
+    vel = 520,
+    escala = 0.7,
+    velGiro = 5.5,
     vida = 100,
     sprite = nil,
     cadencia = 0.18,
     tiempoDisparo = 0,
-    bengalaLista = true,
-    bengalaRecarga = 0,
-    bengalaRecargaMax = 6,
+    misilesListos = true,
+    misilesRecarga = 0,
+    misilesRecargaMax = 6,
     invulnerable = 0,
     vivo = true,
     llama = nil,
@@ -25,15 +26,15 @@ Jugador = {
 function InicializarJugador()
     Jugador.sprite = love.graphics.newImage("img/playerShip3_green.png")
     Jugador.llama  = love.graphics.newImage("img/fire13.png")
-    Jugador.ancho  = Jugador.sprite:getWidth()
-    Jugador.alto   = Jugador.sprite:getHeight()
+    Jugador.ancho  = Jugador.sprite:getWidth() * Jugador.escala
+    Jugador.alto   = Jugador.sprite:getHeight() * Jugador.escala
 end
 --interaccion
 function InteraccionJugador(key)
-    if key == "x" and Jugador.bengalaLista then
-        LanzarBengala()
-        Jugador.bengalaLista = false
-        Jugador.bengalaRecarga = Jugador.bengalaRecargaMax
+    if key == "x" and Jugador.misilesListos then
+        LanzarMisiles()
+        Jugador.misilesListos = false
+        Jugador.misilesRecarga = Jugador.misilesRecargaMax
     end
 end
 --actualizacion
@@ -60,11 +61,11 @@ function ActualizarJugador(dt)
         DispararLaser(nx, ny, Jugador.angulo)
         Jugador.tiempoDisparo = Jugador.cadencia
     end
-    if not Jugador.bengalaLista then
-        Jugador.bengalaRecarga = Jugador.bengalaRecarga - dt
-        if Jugador.bengalaRecarga <= 0 then
-            Jugador.bengalaRecarga = 0
-            Jugador.bengalaLista = true
+    if not Jugador.misilesListos then
+        Jugador.misilesRecarga = Jugador.misilesRecarga - dt
+        if Jugador.misilesRecarga <= 0 then
+            Jugador.misilesRecarga = 0
+            Jugador.misilesListos = true
         end
     end
     if Jugador.invulnerable > 0 then
@@ -86,7 +87,8 @@ function DibujarJugador()
         love.graphics.setColor(1, 1, 1, 0.3)
     end
     love.graphics.draw(Jugador.sprite, Jugador.x, Jugador.y, Jugador.angulo + math.pi / 2,
-                       1, 1, Jugador.ancho / 2, Jugador.alto / 2)
+                       Jugador.escala, Jugador.escala,
+                       Jugador.sprite:getWidth() / 2, Jugador.sprite:getHeight() / 2)
     love.graphics.setColor(1, 1, 1, 1)
 end
 function CajaJugadorX() return Jugador.x - Jugador.ancho / 2 end

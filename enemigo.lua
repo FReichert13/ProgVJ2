@@ -9,8 +9,9 @@ function Enemigo:init(x, y, v)
     self.x = x
     self.y = y
     self.sprite = SpriteEnemigo
-    self.ancho = self.sprite:getWidth()
-    self.alto  = self.sprite:getHeight()
+    self.escala = 0.7
+    self.ancho = self.sprite:getWidth() * self.escala
+    self.alto  = self.sprite:getHeight() * self.escala
     self.origen_x = self.ancho / 2
     self.origen_y = self.alto / 2
     self.velocidad = v
@@ -50,7 +51,8 @@ end
 --renderizado
 function Enemigo:Dibujar()
     love.graphics.draw(self.sprite, redondear(self.x), redondear(self.y),
-                       self.angulo + math.pi / 2, 1, 1, self.origen_x, self.origen_y)
+                       self.angulo + math.pi / 2, self.escala, self.escala,
+                       self.sprite:getWidth() / 2, self.sprite:getHeight() / 2)
 end
 function Enemigo:CajaX() return self.x - self.origen_x end
 function Enemigo:CajaY() return self.y - self.origen_y end
@@ -75,7 +77,7 @@ end
 --genera la oleada con un patron distinto segun el nivel
 function GenerarOleada(nivel)
     local cantidad  = 3 + nivel
-    local velocidad = 95 + nivel * 17
+    local velocidad = 110 + nivel * 18
     local patron = nivel % 3
     for i = 1, cantidad do
         local x, y

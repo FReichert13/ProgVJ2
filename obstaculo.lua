@@ -67,20 +67,20 @@ function GenerarMeteoro()
     local giro = (math.random() - 0.5) * 3
     if math.random() < 0.5 then
         local sp = SpritesMeteoroChico[math.random(#SpritesMeteoroChico)]
-        local vel = math.random(180, 300)
-        table.insert(Obstaculos, Obstaculo:Nuevo(sp, x, -60, 1, vel, giro, 8, 0.8, true))
+        local vel = math.random(230, 360)
+        table.insert(Obstaculos, Obstaculo:Nuevo(sp, x, -60, 0.7, vel, giro, 8, 0.8, true))
     else
         local sp = SpritesMeteoroGrande[math.random(#SpritesMeteoroGrande)]
-        local vel = math.random(130, 230)
-        table.insert(Obstaculos, Obstaculo:Nuevo(sp, x, -80, 1, vel, giro, 10, 0.8, false))
+        local vel = math.random(170, 280)
+        table.insert(Obstaculos, Obstaculo:Nuevo(sp, x, -80, 0.7, vel, giro, 10, 0.8, false))
     end
 end
 function GenerarPlaneta()
     local sp = SpritesPlaneta[math.random(#SpritesPlaneta)]
-    local esc = math.random(26, 38) / 100
+    local esc = math.random(32, 50) / 100
     local mitad = sp:getWidth() * esc / 2
     local x = math.random(math.floor(mitad), math.floor(ANCHO - mitad))
-    local vel = math.random(60, 95)
+    local vel = math.random(80, 120)
     local planeta = Obstaculo:Nuevo(sp, x, -mitad - 20, esc, vel, 0.15, 20, 0.6, false)
     planeta.tipo = "planeta"
     table.insert(Obstaculos, planeta)
