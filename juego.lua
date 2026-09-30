@@ -10,8 +10,10 @@ Juego = {
 }
 --fuentes (se crean una sola vez)
 function InicializarFuentes()
-    Juego.fuenteHUD    = love.graphics.newFont(16)
-    Juego.fuenteGrande = love.graphics.newFont(52)
+    Juego.fuenteHUD       = love.graphics.newFont("fonts/PressStart2P-Regular.ttf", 14)
+    Juego.fuenteControles = love.graphics.newFont("fonts/PressStart2P-Regular.ttf", 11)
+    Juego.fuenteGrande    = love.graphics.newFont("fonts/PressStart2P-Regular.ttf", 32)
+    Juego.fuenteTitulo    = love.graphics.newFont("fonts/PressStart2P-Regular.ttf", 48)
     love.graphics.setFont(Juego.fuenteHUD)
 end
 --inicializacion
@@ -205,12 +207,14 @@ end
 --menu
 function DibujarMenu()
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.setFont(Juego.fuenteGrande)
-    love.graphics.printf("GUARDIAN ESTELAR", 0, ALTO / 2 - 100, ANCHO, "center")
+    love.graphics.setFont(Juego.fuenteTitulo)
+    love.graphics.printf("STELLAR", 0, ALTO / 2 - 160, ANCHO, "center")
+    love.graphics.printf("GUARDIAN", 0, ALTO / 2 - 100, ANCHO, "center")
     love.graphics.setFont(Juego.fuenteHUD)
     love.graphics.printf("Enter para jugar", 0, ALTO / 2, ANCHO, "center")
+    love.graphics.setFont(Juego.fuenteControles)
     love.graphics.printf("Flechas/AD: girar    W/Arriba: avanzar    Espacio: disparar    X: misiles",
-                        0, ALTO / 2 + 40, ANCHO, "center")
+                        0, ALTO / 2 + 50, ANCHO, "center")
 end
 --escena de la partida
 function DibujarJuego()
@@ -231,15 +235,15 @@ function DibujarHUD()
     --fila 1: energia (izquierda) y misiles (derecha)
     love.graphics.print("Energía", 12, 10)
     love.graphics.setColor(1, 1, 1, 0.3)
-    love.graphics.rectangle("fill", 80, 12, 140, 16)
+    love.graphics.rectangle("fill", 130, 12, 140, 16)
     local r, g, b = 0.2, 0.9, 0.3
     if Jugador.vida <= 15 then r, g, b = 1, 0.2, 0.2
     elseif Jugador.vida <= 40 then r, g, b = 1, 0.6, 0.1 end
     love.graphics.setColor(r, g, b, 1)
-    love.graphics.rectangle("fill", 80, 12, 140 * (Jugador.vida / 100), 16)
+    love.graphics.rectangle("fill", 130, 12, 140 * (Jugador.vida / 100), 16)
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.print(math.floor(Jugador.vida), 228, 10)
-    love.graphics.print("Misiles [X]", ANCHO - 210, 10)
+    love.graphics.print(math.floor(Jugador.vida), 280, 10)
+    love.graphics.print("Misiles [X]", ANCHO - 300, 10)
     love.graphics.setColor(0.2, 0.2, 0.2, 1)
     love.graphics.rectangle("fill", ANCHO - 120, 12, 110, 16)
     if Jugador.misilesListos then
@@ -252,12 +256,13 @@ function DibujarHUD()
     end
     love.graphics.setColor(1, 1, 1, 1)
     --fila 2: oleada, puntaje y enemigos
-    love.graphics.print("Oleada " .. Juego.oleada .. "/" .. Juego.oleadasTotales, 12, 34)
-    love.graphics.print("Puntaje " .. Juego.puntaje, 280, 34)
-    love.graphics.print("Enemigos " .. #Enemigos, 520, 34)
+    love.graphics.print("Oleada " .. Juego.oleada .. "/" .. Juego.oleadasTotales, 12, 40)
+    love.graphics.print("Puntaje " .. Juego.puntaje, 320, 40)
+    love.graphics.print("Enemigos " .. #Enemigos, 620, 40)
     --controles abajo
+    love.graphics.setFont(Juego.fuenteControles)
     love.graphics.print("Flechas/AD: girar   W: avanzar   Espacio: disparar   X: misiles",
-                        12, ALTO - 24)
+                        12, ALTO - 22)
 end
 function DibujarDestello()
     if Juego.destelloDanio > 0 then

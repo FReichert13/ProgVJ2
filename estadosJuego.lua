@@ -1,6 +1,13 @@
 --estados del juego
+
 --menu inicial
 EstadoMenu = Class{ __includes = Estado }
+function EstadoMenu:ingresar()
+    ReproducirMusicaMenu()
+end
+function EstadoMenu:salir()
+    DetenerMusicaMenu()
+end
 function EstadoMenu:dibujar()
     DibujarMenu()
 end
@@ -9,6 +16,7 @@ function EstadoMenu:teclado(key)
         MaquinaJuego:cambiar("jugando")
     end
 end
+
 --partida en curso
 EstadoJugando = Class{ __includes = Estado }
 function EstadoJugando:ingresar()
@@ -34,6 +42,7 @@ end
 function EstadoJugando:teclado(key)
     InteraccionJugador(key)
 end
+
 --pantalla de victoria
 EstadoVictoria = Class{ __includes = Estado }
 function EstadoVictoria:dibujar()
@@ -45,6 +54,7 @@ function EstadoVictoria:teclado(key)
         MaquinaJuego:cambiar("jugando")
     end
 end
+
 --pantalla de derrota
 EstadoDerrota = Class{ __includes = Estado }
 function EstadoDerrota:dibujar()

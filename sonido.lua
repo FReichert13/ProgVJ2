@@ -4,10 +4,13 @@ Sonidos = nil
 function CargarSonidos()
     Sonidos = {
         laser   = love.audio.newSource("sonidos/sfx_laser1.ogg", "static"),
-        derrota = love.audio.newSource("sonidos/sfx_lose.ogg", "static")
+        derrota = love.audio.newSource("sonidos/sfx_lose.ogg", "static"),
+        musicaMenu = love.audio.newSource("sonidos/musica_menu.mp3", "stream")
     }
     Sonidos.laser:setVolume(0.35)
     Sonidos.derrota:setVolume(0.7)
+    Sonidos.musicaMenu:setVolume(0.5)
+    Sonidos.musicaMenu:setLooping(true)
 end
 --reproduccion
 function ReproducirLaser()
@@ -22,4 +25,10 @@ function ReproducirLaserEnemigo()
 end
 function ReproducirDerrota()
     Sonidos.derrota:play()
+end
+function ReproducirMusicaMenu()
+    Sonidos.musicaMenu:play()
+end
+function DetenerMusicaMenu()
+    Sonidos.musicaMenu:stop()
 end
