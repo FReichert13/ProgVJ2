@@ -3,6 +3,7 @@ ANCHO = 960
 ALTO  = 1280
 --modulos
 Class = require('lib.class')
+Signal = require('lib.signal')
 require('estado')
 require('maquinaEstado')
 require('estadosEnemigo')
@@ -18,6 +19,7 @@ require('tiposEnemigo')
 require('obstaculo')
 require('efectos')
 require('juego')
+require('hud')
 require('estadosJuego')
 --inicializacion
 function love.load()
@@ -33,6 +35,7 @@ function love.load()
     InicializarObstaculos()
     InicializarEfectos()
     InicializarFuentes()
+    InicializarHUD()
     MaquinaJuego = MaquinaEstado{
         menu     = function() return EstadoMenu() end,
         jugando  = function() return EstadoJugando() end,

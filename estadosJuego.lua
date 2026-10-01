@@ -30,6 +30,7 @@ function EstadoJugando:actualizar(dt)
     ActualizarEnemigos(dt)
     ActualizarObstaculos(dt)
     ActualizarJuego(dt)
+    MiHUD:Actualizar(dt)
     if not Jugador.vivo then
         MaquinaJuego:cambiar("derrota")
     elseif Juego.gano then

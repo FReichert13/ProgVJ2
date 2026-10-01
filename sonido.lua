@@ -11,6 +11,8 @@ function CargarSonidos()
     Sonidos.derrota:setVolume(0.7)
     Sonidos.musicaMenu:setVolume(0.5)
     Sonidos.musicaMenu:setLooping(true)
+    --el sonido de derrota responde a un evento
+    Signal.register("alPerder", function() ReproducirDerrota() end)
 end
 --reproduccion
 function ReproducirLaser()

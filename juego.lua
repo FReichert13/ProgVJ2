@@ -1,6 +1,5 @@
 --estado
 Juego = {
-    puntaje = 0,
     oleada = 0,
     oleadasTotales = 3,
     gano = false,
@@ -18,13 +17,13 @@ function InicializarFuentes()
 end
 --inicializacion
 function InicializarJuego()
-    Juego.puntaje = 0
     Juego.oleada = 0
     Juego.gano = false
     Juego.destelloDanio = 0
     SiguienteOleada()
 end
 function ReiniciarJuego()
+    Signal.emit("alReiniciar")
     Jugador.x = ANCHO / 2
     Jugador.y = ALTO * 0.75
     Jugador.angulo = -math.pi / 2
@@ -50,6 +49,7 @@ function SiguienteOleada()
         Juego.gano = true
     else
         GenerarOleada(Juego.oleada)
+        Signal.emit("alIniciarOleada", Juego.oleada)
     end
 end
 --daño
@@ -63,8 +63,9 @@ function DanarJugador(danio)
         Jugador.vida = 0
         Jugador.vivo = false
         CrearExplosion(Jugador.x, Jugador.y, 0.9)
-        ReproducirDerrota()
+        Signal.emit("alPerder")
     end
+    Signal.emit("alRecibirDanio", Jugador.vida)
 end
 --muerte instantanea (cuando te chocas a un planeta)
 function DestruirJugador()
@@ -72,7 +73,8 @@ function DestruirJugador()
     Jugador.vivo = false
     Juego.destelloDanio = 1
     CrearExplosion(Jugador.x, Jugador.y, 0.9)
-    ReproducirDerrota()
+    Signal.emit("alPerder")
+    Signal.emit("alRecibirDanio", 0)
 end
 --misiles (lanza 6 misiles en abanico, 3 de cada lado)
 function LanzarMisiles()
@@ -102,7 +104,7 @@ function ResolverColisiones()
                 CrearExplosion(e.x, e.y)
                 table.remove(Enemigos, j)
                 table.remove(Disparos, i)
-                Juego.puntaje = Juego.puntaje + 10
+                Signal.emit("alMorirEnemigo", 10)
                 break
             end
         end
@@ -119,7 +121,7 @@ function ResolverColisiones()
                 CrearExplosion(o.x, o.y)
                 table.remove(Obstaculos, j)
                 table.remove(Disparos, i)
-                Juego.puntaje = Juego.puntaje + 5
+                Signal.emit("alDestruirMeteoro", 5)
                 break
             end
         end
@@ -135,7 +137,7 @@ function ResolverColisiones()
             if hayColision(mx, my, m.ancho, m.alto, e:CajaX(), e:CajaY(), e.ancho, e.alto) then
                 CrearExplosion(e.x, e.y)
                 table.remove(Enemigos, j)
-                Juego.puntaje = Juego.puntaje + 10
+                Signal.emit("alMorirEnemigo", 10)
                 impacto = true
                 break
             end
@@ -147,7 +149,7 @@ function ResolverColisiones()
                                o:CajaX(), o:CajaY(), o:CajaAncho(), o:CajaAlto()) then
                     CrearExplosion(o.x, o.y)
                     table.remove(Obstaculos, j)
-                    Juego.puntaje = Juego.puntaje + 5
+                    Signal.emit("alDestruirMeteoro", 5)
                     impacto = true
                     break
                 end
@@ -226,43 +228,7 @@ function DibujarJuego()
     DibujarJugador()
     DibujarEfectos()
     DibujarDestello()
-    DibujarHUD()
-end
---hud
-function DibujarHUD()
-    love.graphics.setFont(Juego.fuenteHUD)
-    love.graphics.setColor(1, 1, 1, 1)
-    --fila 1: energia (izquierda) y misiles (derecha)
-    love.graphics.print("Energía", 12, 10)
-    love.graphics.setColor(1, 1, 1, 0.3)
-    love.graphics.rectangle("fill", 130, 12, 140, 16)
-    local r, g, b = 0.2, 0.9, 0.3
-    if Jugador.vida <= 15 then r, g, b = 1, 0.2, 0.2
-    elseif Jugador.vida <= 40 then r, g, b = 1, 0.6, 0.1 end
-    love.graphics.setColor(r, g, b, 1)
-    love.graphics.rectangle("fill", 130, 12, 140 * (Jugador.vida / 100), 16)
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.print(math.floor(Jugador.vida), 280, 10)
-    love.graphics.print("Misiles [X]", ANCHO - 300, 10)
-    love.graphics.setColor(0.2, 0.2, 0.2, 1)
-    love.graphics.rectangle("fill", ANCHO - 120, 12, 110, 16)
-    if Jugador.misilesListos then
-        love.graphics.setColor(1, 0.8, 0.2, 1)
-        love.graphics.rectangle("fill", ANCHO - 120, 12, 110, 16)
-    else
-        local pr = 1 - (Jugador.misilesRecarga / Jugador.misilesRecargaMax)
-        love.graphics.setColor(0.8, 0.6, 0.1, 1)
-        love.graphics.rectangle("fill", ANCHO - 120, 12, 110 * pr, 16)
-    end
-    love.graphics.setColor(1, 1, 1, 1)
-    --fila 2: oleada, puntaje y enemigos
-    love.graphics.print("Oleada " .. Juego.oleada .. "/" .. Juego.oleadasTotales, 12, 40)
-    love.graphics.print("Puntaje " .. Juego.puntaje, 320, 40)
-    love.graphics.print("Enemigos " .. #Enemigos, 620, 40)
-    --controles abajo
-    love.graphics.setFont(Juego.fuenteControles)
-    love.graphics.print("Flechas/AD: girar   W: avanzar   Espacio: disparar   X: misiles",
-                        12, ALTO - 22)
+    MiHUD:Dibujar()
 end
 function DibujarDestello()
     if Juego.destelloDanio > 0 then
@@ -283,6 +249,6 @@ function DibujarFin(gano)
         love.graphics.printf("NAVE DESTRUIDA", 0, ALTO / 2 - 80, ANCHO, "center")
     end
     love.graphics.setFont(Juego.fuenteHUD)
-    love.graphics.printf("Puntaje final: " .. Juego.puntaje, 0, ALTO / 2, ANCHO, "center")
+    love.graphics.printf("Puntaje final: " .. MiHUD.puntaje, 0, ALTO / 2, ANCHO, "center")
     love.graphics.printf("Presioná R para reiniciar", 0, ALTO / 2 + 30, ANCHO, "center")
 end
