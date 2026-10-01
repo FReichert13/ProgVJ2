@@ -20,7 +20,12 @@ end
 --partida en curso
 EstadoJugando = Class{ __includes = Estado }
 function EstadoJugando:ingresar()
-    ReiniciarJuego()
+    if Juego.continuar then
+        Juego.continuar = false
+        Juego.gano = false
+    else
+        ReiniciarJuego()
+    end
 end
 function EstadoJugando:actualizar(dt)
     ActualizarJugador(dt)
@@ -51,7 +56,10 @@ function EstadoVictoria:dibujar()
     DibujarFin(true)
 end
 function EstadoVictoria:teclado(key)
-    if key == "r" then
+    if key == "return" then
+        Juego.continuar = true
+        MaquinaJuego:cambiar("jugando")
+    elseif key == "r" then
         MaquinaJuego:cambiar("jugando")
     end
 end

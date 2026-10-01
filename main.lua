@@ -24,6 +24,7 @@ require('estadosJuego')
 --inicializacion
 function love.load()
     math.randomseed(os.time())
+    Depurar = false
     Lienzo = love.graphics.newCanvas(ANCHO, ALTO)
     CargarSonidos()
     InicializarFondo()
@@ -49,9 +50,16 @@ function love.keypressed(key)
     if key == "escape" then
         love.event.quit()
     end
+    if key == "f1" then
+        love.event.push("modoDebug")
+    end
     if MaquinaJuego.actual.teclado then
         MaquinaJuego.actual:teclado(key)
     end
+end
+--handler de love para el modo debug
+function love.handlers.modoDebug()
+    Depurar = not Depurar
 end
 --actualizacion
 function love.update(dt)
@@ -66,6 +74,7 @@ function love.draw()
     love.graphics.clear()
         DibujarFondo()
         MaquinaJuego:dibujar()
+        DibujarDebug()
     love.graphics.setCanvas()
     --escala el lienzo para llenar la ventana manteniendo la proporcion
     local vw, vh = love.graphics.getDimensions()

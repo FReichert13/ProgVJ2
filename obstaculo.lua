@@ -62,16 +62,21 @@ function InicializarObstaculos()
         love.graphics.newImage("img/planet08.png")
     }
 end
+--factor de velocidad segun la oleada (el mapa se acelera)
+function FactorOleada()
+    return math.min(1 + (Juego.oleada - 1) * 0.08, 2.5)
+end
 function GenerarMeteoro()
     local x = math.random(40, ANCHO - 40)
     local giro = (math.random() - 0.5) * 3
+    local factor = FactorOleada()
     if math.random() < 0.5 then
         local sp = SpritesMeteoroChico[math.random(#SpritesMeteoroChico)]
-        local vel = math.random(230, 360)
+        local vel = math.random(230, 360) * factor
         table.insert(Obstaculos, Obstaculo:Nuevo(sp, x, -60, 0.7, vel, giro, 8, 0.8, true))
     else
         local sp = SpritesMeteoroGrande[math.random(#SpritesMeteoroGrande)]
-        local vel = math.random(170, 280)
+        local vel = math.random(170, 280) * factor
         table.insert(Obstaculos, Obstaculo:Nuevo(sp, x, -80, 0.7, vel, giro, 10, 0.8, false))
     end
 end
@@ -80,7 +85,7 @@ function GenerarPlaneta()
     local esc = math.random(32, 50) / 100
     local mitad = sp:getWidth() * esc / 2
     local x = math.random(math.floor(mitad), math.floor(ANCHO - mitad))
-    local vel = math.random(80, 120)
+    local vel = math.random(80, 120) * FactorOleada()
     local planeta = Obstaculo:Nuevo(sp, x, -mitad - 20, esc, vel, 0.15, 20, 0.6, false)
     planeta.tipo = "planeta"
     table.insert(Obstaculos, planeta)

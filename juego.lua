@@ -1,7 +1,8 @@
 --estado
 Juego = {
     oleada = 0,
-    oleadasTotales = 3,
+    oleadaVictoria = 10,
+    continuar = false,
     gano = false,
     destelloDanio = 0,
     fuenteHUD = nil,
@@ -32,6 +33,7 @@ function ReiniciarJuego()
     Jugador.invulnerable = 0
     Jugador.misilesListos = true
     Jugador.misilesRecarga = 0
+    Signal.clear("aturdirEnemigos")
     Disparos = {}
     BalasEnemigas = {}
     Enemigos = {}
@@ -42,14 +44,14 @@ function ReiniciarJuego()
     TiempoPlaneta = 0
     InicializarJuego()
 end
---oleadas
+--oleadas (infinitas, el mapa se acelera y a la oleada meta hay victoria)
 function SiguienteOleada()
     Juego.oleada = Juego.oleada + 1
-    if Juego.oleada > Juego.oleadasTotales then
+    Fondo.vel = math.min(340 + (Juego.oleada - 1) * 35, 900)
+    GenerarOleada(Juego.oleada)
+    Signal.emit("alIniciarOleada", Juego.oleada)
+    if Juego.oleada == Juego.oleadaVictoria then
         Juego.gano = true
-    else
-        GenerarOleada(Juego.oleada)
-        Signal.emit("alIniciarOleada", Juego.oleada)
     end
 end
 --daño
@@ -90,6 +92,7 @@ function LanzarMisiles()
         LanzarMisil(derX, derY, a + off)
     end
     ReproducirLaser()
+    Signal.emit("aturdirEnemigos")
 end
 --colisiones
 function ResolverColisiones()
@@ -102,6 +105,7 @@ function ResolverColisiones()
             local e = Enemigos[j]
             if hayColision(px, py, p.ancho, p.alto, e:CajaX(), e:CajaY(), e.ancho, e.alto) then
                 CrearExplosion(e.x, e.y)
+                e:Eliminar()
                 table.remove(Enemigos, j)
                 table.remove(Disparos, i)
                 Signal.emit("alMorirEnemigo", 10)
@@ -126,7 +130,7 @@ function ResolverColisiones()
             end
         end
     end
-    --misiles de los misiles (destruyen nave o meteoro de un golpe, menos planetas)
+    --misiles contra enemigos y meteoros (un golpe, menos planetas)
     for i = #Misiles, 1, -1 do
         local m = Misiles[i]
         local mx = m.x - m.ancho / 2
@@ -136,6 +140,7 @@ function ResolverColisiones()
             local e = Enemigos[j]
             if hayColision(mx, my, m.ancho, m.alto, e:CajaX(), e:CajaY(), e.ancho, e.alto) then
                 CrearExplosion(e.x, e.y)
+                e:Eliminar()
                 table.remove(Enemigos, j)
                 Signal.emit("alMorirEnemigo", 10)
                 impacto = true
@@ -237,6 +242,21 @@ function DibujarDestello()
         love.graphics.setColor(1, 1, 1, 1)
     end
 end
+--modo debug (hitboxes y fps, se activa con F1)
+function DibujarDebug()
+    if not Depurar then return end
+    love.graphics.setColor(0, 1, 0, 1)
+    for _, e in ipairs(Enemigos) do
+        love.graphics.rectangle("line", e:CajaX(), e:CajaY(), e.ancho, e.alto)
+    end
+    for _, o in ipairs(Obstaculos) do
+        love.graphics.rectangle("line", o:CajaX(), o:CajaY(), o:CajaAncho(), o:CajaAlto())
+    end
+    love.graphics.rectangle("line", CajaJugadorX(), CajaJugadorY(), Jugador.ancho, Jugador.alto)
+    love.graphics.setFont(Juego.fuenteControles)
+    love.graphics.print("FPS: " .. love.timer.getFPS(), 12, 70)
+    love.graphics.setColor(1, 1, 1, 1)
+end
 --pantalla final
 function DibujarFin(gano)
     love.graphics.setColor(0, 0, 0, 0.55)
@@ -249,6 +269,10 @@ function DibujarFin(gano)
         love.graphics.printf("NAVE DESTRUIDA", 0, ALTO / 2 - 80, ANCHO, "center")
     end
     love.graphics.setFont(Juego.fuenteHUD)
-    love.graphics.printf("Puntaje final: " .. MiHUD.puntaje, 0, ALTO / 2, ANCHO, "center")
-    love.graphics.printf("Presioná R para reiniciar", 0, ALTO / 2 + 30, ANCHO, "center")
+    love.graphics.printf("Puntaje: " .. MiHUD.puntaje, 0, ALTO / 2, ANCHO, "center")
+    if gano then
+        love.graphics.printf("Enter: seguir    R: reiniciar", 0, ALTO / 2 + 30, ANCHO, "center")
+    else
+        love.graphics.printf("Presioná R para reiniciar", 0, ALTO / 2 + 30, ANCHO, "center")
+    end
 end

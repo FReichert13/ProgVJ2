@@ -19,6 +19,9 @@ function Enemigo:init(x, y, v)
     self.relojMin = 25
     self.relojMax = 45
     self.relojDisparo = math.random(self.relojMin, self.relojMax) / 10
+    self.aturdido = false
+    self.tiempoAturdido = 0
+    self.signalAturdir = Signal.register("aturdirEnemigos", function() self:Aturdir() end)
     self.maquina = MaquinaEstado{
         entrando     = function() return EstadoEntrando(self) end,
         persiguiendo = function() return EstadoPersiguiendo(self) end,
@@ -46,13 +49,29 @@ function Enemigo:Limitar()
 end
 --actualiacion
 function Enemigo:Actualizar(dt)
+    if self.aturdido then
+        self.tiempoAturdido = self.tiempoAturdido - dt
+        if self.tiempoAturdido <= 0 then self.aturdido = false end
+        return
+    end
     self.maquina:actualizar(dt)
+end
+--oyente del evento: se frena un instante
+function Enemigo:Aturdir()
+    self.aturdido = true
+    self.tiempoAturdido = 1.2
+end
+--desuscribe el evento al morir (evita oyentes colgados)
+function Enemigo:Eliminar()
+    Signal.remove("aturdirEnemigos", self.signalAturdir)
 end
 --renderizado
 function Enemigo:Dibujar()
+    if self.aturdido then love.graphics.setColor(0.4, 0.6, 1, 1) end
     love.graphics.draw(self.sprite, redondear(self.x), redondear(self.y),
                        self.angulo + math.pi / 2, self.escala, self.escala,
                        self.sprite:getWidth() / 2, self.sprite:getHeight() / 2)
+    love.graphics.setColor(1, 1, 1, 1)
 end
 function Enemigo:CajaX() return self.x - self.origen_x end
 function Enemigo:CajaY() return self.y - self.origen_y end

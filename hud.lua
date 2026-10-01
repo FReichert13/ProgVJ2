@@ -63,7 +63,7 @@ function HUD:Dibujar()
     end
     love.graphics.setColor(1, 1, 1, 1)
     --fila 2: oleada, puntaje y enemigos
-    love.graphics.print("Oleada " .. Juego.oleada .. "/" .. Juego.oleadasTotales, 12, 40)
+    love.graphics.print("Oleada " .. Juego.oleada, 12, 40)
     love.graphics.print("Puntaje " .. self.puntaje, 320, 40)
     love.graphics.print("Enemigos " .. #Enemigos, 620, 40)
     --cartel de oleada (respuesta visual al evento)
