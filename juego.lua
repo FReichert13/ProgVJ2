@@ -12,6 +12,7 @@ Juego = {
 function InicializarFuentes()
     Juego.fuenteHUD       = love.graphics.newFont("fonts/PressStart2P-Regular.ttf", 14)
     Juego.fuenteControles = love.graphics.newFont("fonts/PressStart2P-Regular.ttf", 11)
+    Juego.fuenteMenu      = love.graphics.newFont("fonts/PressStart2P-Regular.ttf", 24)
     Juego.fuenteGrande    = love.graphics.newFont("fonts/PressStart2P-Regular.ttf", 32)
     Juego.fuenteTitulo    = love.graphics.newFont("fonts/PressStart2P-Regular.ttf", 48)
     love.graphics.setFont(Juego.fuenteHUD)
@@ -211,18 +212,6 @@ function ActualizarJuego(dt)
         SiguienteOleada()
     end
 end
---menu
-function DibujarMenu()
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.setFont(Juego.fuenteTitulo)
-    love.graphics.printf("STELLAR", 0, ALTO / 2 - 160, ANCHO, "center")
-    love.graphics.printf("GUARDIAN", 0, ALTO / 2 - 100, ANCHO, "center")
-    love.graphics.setFont(Juego.fuenteHUD)
-    love.graphics.printf("Enter para jugar", 0, ALTO / 2, ANCHO, "center")
-    love.graphics.setFont(Juego.fuenteControles)
-    love.graphics.printf("Flechas/AD: girar    W/Arriba: avanzar    Espacio: disparar    X: misiles",
-                        0, ALTO / 2 + 50, ANCHO, "center")
-end
 --escena de la partida
 function DibujarJuego()
     DibujarObstaculos()
@@ -256,23 +245,4 @@ function DibujarDebug()
     love.graphics.setFont(Juego.fuenteControles)
     love.graphics.print("FPS: " .. love.timer.getFPS(), 12, 70)
     love.graphics.setColor(1, 1, 1, 1)
-end
---pantalla final
-function DibujarFin(gano)
-    love.graphics.setColor(0, 0, 0, 0.55)
-    love.graphics.rectangle("fill", 0, 0, ANCHO, ALTO)
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.setFont(Juego.fuenteGrande)
-    if gano then
-        love.graphics.printf("¡VICTORIA!", 0, ALTO / 2 - 80, ANCHO, "center")
-    else
-        love.graphics.printf("NAVE DESTRUIDA", 0, ALTO / 2 - 80, ANCHO, "center")
-    end
-    love.graphics.setFont(Juego.fuenteHUD)
-    love.graphics.printf("Puntaje: " .. MiHUD.puntaje, 0, ALTO / 2, ANCHO, "center")
-    if gano then
-        love.graphics.printf("Enter: seguir    R: reiniciar", 0, ALTO / 2 + 30, ANCHO, "center")
-    else
-        love.graphics.printf("Presioná R para reiniciar", 0, ALTO / 2 + 30, ANCHO, "center")
-    end
 end
