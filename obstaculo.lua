@@ -93,8 +93,11 @@ end
 function ActualizarObstaculos(dt)
     TiempoMeteoro = TiempoMeteoro + dt
     if TiempoMeteoro >= 1.8 then TiempoMeteoro = 0; GenerarMeteoro() end
-    TiempoPlaneta = TiempoPlaneta + dt
-    if TiempoPlaneta >= 28 then TiempoPlaneta = 0; GenerarPlaneta() end
+    --durante la pelea del jefe se pausan los planetas (los meteoros siguen)
+    if not Juego.enJefe then
+        TiempoPlaneta = TiempoPlaneta + dt
+        if TiempoPlaneta >= 28 then TiempoPlaneta = 0; GenerarPlaneta() end
+    end
     for i = #Obstaculos, 1, -1 do
         local o = Obstaculos[i]
         o:Actualizar(dt)

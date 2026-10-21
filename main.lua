@@ -19,8 +19,10 @@ require('tiposEnemigo')
 require('obstaculo')
 require('efectos')
 require('juego')
+require('jefe')
 require('hud')
 require('menu')
+require('dialogo')
 require('estadosJuego')
 --inicializacion
 function love.load()
@@ -39,10 +41,12 @@ function love.load()
     InicializarFuentes()
     InicializarHUD()
     MaquinaJuego = MaquinaEstado{
-        menu     = function() return EstadoMenu() end,
-        jugando  = function() return EstadoJugando() end,
-        victoria = function() return EstadoVictoria() end,
-        derrota  = function() return EstadoDerrota() end
+        menu        = function() return EstadoMenu() end,
+        intro       = function() return EstadoIntro() end,
+        jugando     = function() return EstadoJugando() end,
+        dialogoJefe = function() return EstadoDialogoJefe() end,
+        victoria    = function() return EstadoVictoria() end,
+        derrota     = function() return EstadoDerrota() end
     }
     MaquinaJuego:cambiar("menu")
 end

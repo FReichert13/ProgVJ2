@@ -1,8 +1,13 @@
 --estado
 Juego = {
     oleada = 0,
-    oleadaVictoria = 10,
+    oleadasNormales = 10,
     continuar = false,
+    mantenerEstado = false,
+    enJefe = false,
+    jefe = nil,
+    jefeVencido = false,
+    pedirDialogoJefe = false,
     gano = false,
     destelloDanio = 0,
     fuenteHUD = nil,
@@ -22,6 +27,10 @@ function InicializarJuego()
     Juego.oleada = 0
     Juego.gano = false
     Juego.destelloDanio = 0
+    Juego.enJefe = false
+    Juego.jefe = nil
+    Juego.jefeVencido = false
+    Juego.pedirDialogoJefe = false
     SiguienteOleada()
 end
 function ReiniciarJuego()
@@ -45,15 +54,19 @@ function ReiniciarJuego()
     TiempoPlaneta = 0
     InicializarJuego()
 end
---oleadas (infinitas, el mapa se acelera y a la oleada meta hay victoria)
+--oleadas (el mapa se acelera; al limpiar las normales aparece el jefe)
 function SiguienteOleada()
     Juego.oleada = Juego.oleada + 1
     Fondo.vel = math.min(340 + (Juego.oleada - 1) * 35, 900)
     GenerarOleada(Juego.oleada)
     Signal.emit("alIniciarOleada", Juego.oleada)
-    if Juego.oleada == Juego.oleadaVictoria then
-        Juego.gano = true
-    end
+end
+--aparicion del jefe final
+function IniciarJefe()
+    Enemigos = {}
+    BalasEnemigas = {}
+    Juego.jefe = Jefe(ANCHO / 2, 200)
+    Juego.enJefe = true
 end
 --daño
 function DanarJugador(danio)
@@ -170,8 +183,46 @@ function ResolverColisiones()
         local b = BalasEnemigas[i]
         if hayColision(b.x - b.ancho / 2, b.y - b.alto / 2, b.ancho, b.alto,
                        CajaJugadorX(), CajaJugadorY(), Jugador.ancho, Jugador.alto) then
+            local d = b.danio or 10
             table.remove(BalasEnemigas, i)
-            DanarJugador(10)
+            DanarJugador(d)
+        end
+    end
+    --colisiones del jefe final
+    if Juego.enJefe and Juego.jefe then
+        local jf = Juego.jefe
+        --laser del jugador contra el jefe
+        for i = #Disparos, 1, -1 do
+            local p = Disparos[i]
+            if hayColision(p.x - p.ancho / 2, p.y - p.alto / 2, p.ancho, p.alto,
+                           jf:CajaX(), jf:CajaY(), jf.ancho, jf.alto) then
+                jf:RecibirDano(1)
+                CrearExplosion(p.x, p.y, 0.2)
+                table.remove(Disparos, i)
+            end
+        end
+        --misiles contra el jefe
+        for i = #Misiles, 1, -1 do
+            local m = Misiles[i]
+            if hayColision(m.x - m.ancho / 2, m.y - m.alto / 2, m.ancho, m.alto,
+                           jf:CajaX(), jf:CajaY(), jf.ancho, jf.alto) then
+                jf:RecibirDano(6)
+                CrearExplosion(m.x, m.y, 0.4)
+                table.remove(Misiles, i)
+            end
+        end
+        --cuerpo del jefe contra el jugador
+        if not jf.muerto and hayColision(jf:CajaX(), jf:CajaY(), jf.ancho, jf.alto,
+                       CajaJugadorX(), CajaJugadorY(), Jugador.ancho, Jugador.alto) then
+            DanarJugador(14)
+        end
+        --laser recto del jefe contra el jugador
+        if jf:LaserActivo() then
+            local lx, lancho = jf:LaserCaja()
+            if hayColision(lx, jf.y, lancho, ALTO,
+                           CajaJugadorX(), CajaJugadorY(), Jugador.ancho, Jugador.alto) then
+                DanarJugador(16)
+            end
         end
     end
     --choque enemigo contra el jugador
@@ -208,14 +259,29 @@ function ActualizarJuego(dt)
         if Juego.destelloDanio < 0 then Juego.destelloDanio = 0 end
     end
     ResolverColisiones()
-    if #Enemigos == 0 and not Juego.gano then
-        SiguienteOleada()
+    if Juego.enJefe then
+        --durante el jefe no hay oleadas normales
+        Juego.jefe:Actualizar(dt)
+        if Juego.jefe.terminado then
+            Juego.enJefe = false
+            Juego.jefe = nil
+            Juego.jefeVencido = true
+            Juego.gano = true
+        end
+    elseif #Enemigos == 0 and not Juego.gano then
+        if Juego.oleada >= Juego.oleadasNormales and not Juego.jefeVencido then
+            --se limpiaron las oleadas normales: va el dialogo y luego el jefe
+            Juego.pedirDialogoJefe = true
+        else
+            SiguienteOleada()
+        end
     end
 end
 --escena de la partida
 function DibujarJuego()
     DibujarObstaculos()
     DibujarEnemigos()
+    if Juego.jefe then Juego.jefe:Dibujar() end
     DibujarBalasEnemigas()
     DibujarDisparos()
     DibujarMisiles()

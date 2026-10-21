@@ -21,7 +21,7 @@ function EstadoMenu:teclado(key)
     if self.pantalla == "principal" then
         self.seleccion = MoverSeleccion(self.seleccion, #OpcionesPrincipal, key)
         if key == "return" then
-            if self.seleccion == 1 then MaquinaJuego:cambiar("jugando")
+            if self.seleccion == 1 then MaquinaJuego:cambiar("intro")
             elseif self.seleccion == 2 then self.pantalla = "opciones"; self.seleccion = 1
             elseif self.seleccion == 3 then self.pantalla = "controles"; self.seleccion = 1
             elseif self.seleccion == 4 then love.event.quit() end
@@ -45,6 +45,24 @@ function EstadoMenu:teclado(key)
     end
 end
 
+--intro dialogada (corrutina, patron 7.1)
+EstadoIntro = Class{ __includes = Estado }
+function EstadoIntro:ingresar()
+    ReproducirMusicaMenu()
+    self.dialogo = Dialogo(TextoIntro, function()
+        MaquinaJuego:cambiar("jugando")
+    end)
+end
+function EstadoIntro:actualizar(dt)
+    self.dialogo:Actualizar(dt)
+end
+function EstadoIntro:dibujar()
+    self.dialogo:Dibujar()
+end
+function EstadoIntro:teclado(key)
+    self.dialogo:Teclado(key)
+end
+
 --partida en curso
 EstadoJugando = Class{ __includes = Estado }
 function EstadoJugando:ingresar()
@@ -52,6 +70,9 @@ function EstadoJugando:ingresar()
     if Juego.continuar then
         Juego.continuar = false
         Juego.gano = false
+    elseif Juego.mantenerEstado then
+        --volvemos del dialogo del jefe: no reiniciar la partida
+        Juego.mantenerEstado = false
     else
         ReiniciarJuego()
     end
@@ -67,6 +88,9 @@ function EstadoJugando:actualizar(dt)
     MiHUD:Actualizar(dt)
     if not Jugador.vivo then
         MaquinaJuego:cambiar("derrota")
+    elseif Juego.pedirDialogoJefe then
+        Juego.pedirDialogoJefe = false
+        MaquinaJuego:cambiar("dialogoJefe")
     elseif Juego.gano then
         MaquinaJuego:cambiar("victoria")
     end
@@ -76,6 +100,26 @@ function EstadoJugando:dibujar()
 end
 function EstadoJugando:teclado(key)
     InteraccionJugador(key)
+end
+
+--dialogo previo al jefe (corrutina, patron 7.1); al terminar aparece el jefe
+EstadoDialogoJefe = Class{ __includes = Estado }
+function EstadoDialogoJefe:ingresar()
+    self.dialogo = Dialogo(TextoJefe, function()
+        IniciarJefe()
+        Juego.mantenerEstado = true
+        MaquinaJuego:cambiar("jugando")
+    end)
+end
+function EstadoDialogoJefe:actualizar(dt)
+    self.dialogo:Actualizar(dt)
+end
+function EstadoDialogoJefe:dibujar()
+    DibujarJuego()
+    self.dialogo:Dibujar()
+end
+function EstadoDialogoJefe:teclado(key)
+    self.dialogo:Teclado(key)
 end
 
 --pantalla de victoria
