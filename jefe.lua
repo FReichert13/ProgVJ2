@@ -19,7 +19,7 @@ function Jefe:init(x, y)
     self.escala = 1
     self.ancho = self.sprite:getWidth()  * self.escala
     self.alto  = self.sprite:getHeight() * self.escala
-    self.hpMax = 180
+    self.hpMax = 90
     self.hp = self.hpMax
     self.estado = "Apareciendo"
     self.muerto = false
@@ -41,20 +41,20 @@ function Jefe:patrones()
         if self.hp > self.hpMax * 0.5 then
             --fase 1
             self.estado = "Fase 1"
-            self:abanico(7)
+            self:abanico(6)
             esperar(1.2)
-            self:abanico(7)
+            self:abanico(6)
             esperar(1.0)
             self:balaGrande()
             esperar(1.6)
         else
             --fase 2 (mas agresivo)
             self.estado = "Fase 2"
-            self:abanico(11)
+            self:abanico(8)
             esperar(0.6)
             self:lanzarLaser()
             esperar(1.6)
-            self:abanico(9)
+            self:abanico(7)
             esperar(0.5)
             self:invocar()
             esperar(1.4)
@@ -76,10 +76,10 @@ end
 function Jefe:anguloAlJugador()
     return math.atan2(Jugador.y - self.y, Jugador.x - self.x)
 end
---ataque: abanico de balas iguales a las de las naves
+--ataque: abanico de balas iguales a las de las naves (bien espaciadas)
 function Jefe:abanico(cantidad)
     local base = self:anguloAlJugador()
-    local apertura = math.rad(55)
+    local apertura = math.rad(72)
     for i = 1, cantidad do
         local t = (i - 1) / (cantidad - 1) - 0.5
         LanzarBalaEnemiga(self.x, self.y + self.alto / 2, base + t * apertura,
