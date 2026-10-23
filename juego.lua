@@ -1,12 +1,13 @@
 --estado
 Juego = {
     oleada = 0,
-    oleadasNormales = 10,
+    proximoJefe = 10,          -- el jefe aparece en 10, 20, 30...
+    primerJefeVencido = false, -- la pantalla de victoria sale solo con el primer jefe
     continuar = false,
     mantenerEstado = false,
     enJefe = false,
     jefe = nil,
-    jefeVencido = false,
+    jefeNivel = 1,
     pedirDialogoJefe = false,
     gano = false,
     destelloDanio = 0,
@@ -29,7 +30,8 @@ function InicializarJuego()
     Juego.destelloDanio = 0
     Juego.enJefe = false
     Juego.jefe = nil
-    Juego.jefeVencido = false
+    Juego.proximoJefe = 10
+    Juego.primerJefeVencido = false
     Juego.pedirDialogoJefe = false
     SiguienteOleada()
 end
@@ -54,18 +56,19 @@ function ReiniciarJuego()
     TiempoPlaneta = 0
     InicializarJuego()
 end
---oleadas (el mapa se acelera; al limpiar las normales aparece el jefe)
+--oleadas (el mapa se acelera de a poco; el jefe aparece cada 10 niveles)
 function SiguienteOleada()
     Juego.oleada = Juego.oleada + 1
-    Fondo.vel = math.min(340 + (Juego.oleada - 1) * 35, 900)
+    Fondo.vel = math.min(300 + (Juego.oleada - 1) * 22, 820)
     GenerarOleada(Juego.oleada)
     Signal.emit("alIniciarOleada", Juego.oleada)
 end
---aparicion del jefe final
+--aparicion del jefe (su nivel sube con cada reaparicion: 10->1, 20->2, 30->3...)
 function IniciarJefe()
     Enemigos = {}
     BalasEnemigas = {}
-    Juego.jefe = Jefe(ANCHO / 2, 200)
+    Juego.jefeNivel = math.floor(Juego.oleada / 10)
+    Juego.jefe = Jefe(ANCHO / 2, 200, Juego.jefeNivel)
     Juego.enJefe = true
 end
 --daño
@@ -214,14 +217,14 @@ function ResolverColisiones()
         --cuerpo del jefe contra el jugador
         if not jf.muerto and hayColision(jf:CajaX(), jf:CajaY(), jf.ancho, jf.alto,
                        CajaJugadorX(), CajaJugadorY(), Jugador.ancho, Jugador.alto) then
-            DanarJugador(14)
+            DanarJugador(jf.danioCuerpo)
         end
         --laser recto del jefe contra el jugador
         if jf:LaserActivo() then
             local lx, lancho = jf:LaserCaja()
             if hayColision(lx, jf.y, lancho, ALTO,
                            CajaJugadorX(), CajaJugadorY(), Jugador.ancho, Jugador.alto) then
-                DanarJugador(16)
+                DanarJugador(jf.danioLaser)
             end
         end
     end
@@ -265,12 +268,16 @@ function ActualizarJuego(dt)
         if Juego.jefe.terminado then
             Juego.enJefe = false
             Juego.jefe = nil
-            Juego.jefeVencido = true
-            Juego.gano = true
+            Juego.proximoJefe = Juego.proximoJefe + 10
+            if not Juego.primerJefeVencido then
+                --solo el primer jefe dispara la pantalla de victoria
+                Juego.primerJefeVencido = true
+                Juego.gano = true
+            end
         end
     elseif #Enemigos == 0 and not Juego.gano then
-        if Juego.oleada >= Juego.oleadasNormales and not Juego.jefeVencido then
-            --se limpiaron las oleadas normales: va el dialogo y luego el jefe
+        if Juego.oleada >= Juego.proximoJefe then
+            --se limpio el nivel del jefe: va el dialogo y luego el jefe
             Juego.pedirDialogoJefe = true
         else
             SiguienteOleada()

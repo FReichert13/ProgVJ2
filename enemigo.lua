@@ -95,8 +95,9 @@ function ElegirTipo(nivel)
 end
 --genera la oleada con un patron distinto segun el nivel
 function GenerarOleada(nivel)
-    local cantidad  = 3 + nivel
-    local velocidad = 110 + nivel * 18
+    --sube de a poco y con tope, para que despues del nivel 10 siga siendo jugable
+    local cantidad  = math.min(4 + math.floor(nivel * 0.7), 12)
+    local velocidad = math.min(110 + nivel * 9, 260)
     local patron = nivel % 3
     for i = 1, cantidad do
         local x, y

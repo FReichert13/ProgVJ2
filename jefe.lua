@@ -10,8 +10,9 @@ local function esperar(segundos)
         t = t + coroutine.yield()
     end
 end
---inicializacion
-function Jefe:init(x, y)
+--inicializacion (nivel 1 = primer jefe; sube con cada reaparicion)
+function Jefe:init(x, y, nivel)
+    self.nivel = nivel or 1
     self.x = x
     self.y = y
     if not spriteJefe then spriteJefe = love.graphics.newImage("img/jefe_final.png") end
@@ -19,8 +20,13 @@ function Jefe:init(x, y)
     self.escala = 1
     self.ancho = self.sprite:getWidth()  * self.escala
     self.alto  = self.sprite:getHeight() * self.escala
-    self.hpMax = 90
+    --escalado por nivel: mas vida, mas dano y dispara mas rapido
+    self.hpMax = 90 + (self.nivel - 1) * 60
     self.hp = self.hpMax
+    self.danioMult = 1 + (self.nivel - 1) * 0.25
+    self.ritmo = math.max(0.5, 1 - (self.nivel - 1) * 0.12)
+    self.danioCuerpo = math.floor(14 * self.danioMult)
+    self.danioLaser  = math.floor(16 * self.danioMult)
     self.estado = "Apareciendo"
     self.muerto = false
     self.terminado = false
@@ -33,6 +39,10 @@ function Jefe:init(x, y)
     --corrutina de patrones de ataque
     self.rutina = coroutine.create(function() self:patrones() end)
 end
+--espera escalada por el ritmo del jefe (mas nivel = ataca mas seguido)
+function Jefe:pausa(segundos)
+    esperar(segundos * self.ritmo)
+end
 --libreto de ataques (se lee como un guion gracias a la corrutina)
 function Jefe:patrones()
     self.estado = "Preparando"
@@ -42,22 +52,22 @@ function Jefe:patrones()
             --fase 1
             self.estado = "Fase 1"
             self:abanico(6)
-            esperar(1.2)
+            self:pausa(1.2)
             self:abanico(6)
-            esperar(1.0)
+            self:pausa(1.0)
             self:balaGrande()
-            esperar(1.6)
+            self:pausa(1.6)
         else
             --fase 2 (mas agresivo)
             self.estado = "Fase 2"
             self:abanico(8)
-            esperar(0.6)
+            self:pausa(0.6)
             self:lanzarLaser()
-            esperar(1.6)
+            self:pausa(1.6)
             self:abanico(7)
-            esperar(0.5)
+            self:pausa(0.5)
             self:invocar()
-            esperar(1.4)
+            self:pausa(1.4)
         end
     end
     --derrotado: agonia con explosiones antes de la victoria
@@ -80,17 +90,19 @@ end
 function Jefe:abanico(cantidad)
     local base = self:anguloAlJugador()
     local apertura = math.rad(72)
+    local danio = math.floor(10 * self.danioMult + 0.5)
     for i = 1, cantidad do
         local t = (i - 1) / (cantidad - 1) - 0.5
         LanzarBalaEnemiga(self.x, self.y + self.alto / 2, base + t * apertura,
-                          { velocidad = 240, silencioso = true })
+                          { velocidad = 240, danio = danio, silencioso = true })
     end
     ReproducirLaserEnemigo()
 end
 --ataque: una sola bala grande y lenta
 function Jefe:balaGrande()
     LanzarBalaEnemiga(self.x, self.y + self.alto / 2, self:anguloAlJugador(),
-                      { velocidad = 160, radio = 18, danio = 20, silencioso = true })
+                      { velocidad = 160, radio = 18, danio = math.floor(20 * self.danioMult + 0.5),
+                        silencioso = true })
     ReproducirLaserEnemigo()
 end
 --ataque: laser recto hacia abajo (primero avisa, despues golpea)
@@ -162,7 +174,9 @@ function Jefe:Dibujar()
     love.graphics.setColor(1, 1, 1, 1)
     --nombre y barra de vida
     love.graphics.setFont(Juego.fuenteControles)
-    love.graphics.printf("GENERAL ZORN", 0, 34, ANCHO, "center")
+    local titulo = "GENERAL ZORN"
+    if self.nivel > 1 then titulo = titulo .. "  x" .. self.nivel end
+    love.graphics.printf(titulo, 0, 34, ANCHO, "center")
     local bw = 520
     local bx = (ANCHO - bw) / 2
     love.graphics.setColor(0.2, 0.2, 0.2, 1)

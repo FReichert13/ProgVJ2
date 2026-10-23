@@ -105,7 +105,9 @@ end
 --dialogo previo al jefe (corrutina, patron 7.1); al terminar aparece el jefe
 EstadoDialogoJefe = Class{ __includes = Estado }
 function EstadoDialogoJefe:ingresar()
-    self.dialogo = Dialogo(TextoJefe, function()
+    --primer jefe: mensaje largo; reapariciones (nivel 20, 30...): mensaje corto
+    local texto = (math.floor(Juego.oleada / 10) >= 2) and TextoJefeVuelve or TextoJefe
+    self.dialogo = Dialogo(texto, function()
         IniciarJefe()
         Juego.mantenerEstado = true
         MaquinaJuego:cambiar("jugando")

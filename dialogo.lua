@@ -11,6 +11,10 @@ TextoIntro = {
 TextoJefe = {
     "Has derrotado a todas las oleadas enemigas, pero ahora toca vencer a su nave insignia, comandada por el malvado General Zorn. La victoria está cerca. Éxitos, guardián."
 }
+--mensaje cuando el jefe reaparece (niveles 20, 30, 40...)
+TextoJefeVuelve = {
+    "¡El malvado General Zorn ha vuelto, y más fuerte! ¡Volvé a derrotarlo, Guardián!"
+}
 --recorta un texto a los primeros k caracteres (seguro con acentos/utf-8)
 local function recortar(s, k)
     k = math.floor(k)
